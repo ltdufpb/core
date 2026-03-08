@@ -17,13 +17,25 @@ export DOLLAR='$'
 # export DOCKER_BUILDKIT=0
 # export COMPOSE_DOCKER_CLI_BUILD=0
 
-# Copy .env.example to .envs
-cp $MAIN_CONFIG_PATH/environment/.env.example $MAIN_PATH/.env
 # Load environment variables from .env file
 if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
 else
-    echo ".env file not found. Please create one based on .env.example."
+    echo ".env file not found. Please create one based on ${MAIN_CONFIG_PATH}/environment/.env.example."
+    exit 1
+fi
+
+# Check config .env files exist
+MISSING=false
+for env_file in \
+    "$CORE_FRONTEND_CONFIG_PATH/environment/.env" \
+    "$AUTHENTICATION_CONFIG_PATH/frontend/environment/.env"; do
+    if [ ! -f "$env_file" ]; then
+        echo "Error: $env_file not found. Create it from ${env_file%.env}.env.example"
+        MISSING=true
+    fi
+done
+if [ "$MISSING" = true ]; then
     exit 1
 fi
 
