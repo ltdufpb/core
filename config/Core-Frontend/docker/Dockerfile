@@ -13,9 +13,9 @@ WORKDIR /app
 
 # Copiar apenas arquivos de dependências primeiro
 COPY package.json package-lock.json ./
-COPY scripts/map-dependency.cjs ./scripts/
 
-ARG GITLAB_TOKEN
+
+
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ARG NO_PROXY
@@ -23,24 +23,15 @@ ARG NO_PROXY
 # Configurar proxy e git antes de instalar dependências
 RUN git config --global http.proxy "$HTTP_PROXY" && \
     git config --global https.proxy "$HTTPS_PROXY" && \
-    git config --global no.proxy "$NO_PROXY" && \
-    git config --global url."https://gitlab-ci-token:${GITLAB_TOKEN}@inovacao.dataprev.gov.br".insteadOf "https://inovacao.dataprev.gov.br"
+    git config --global no.proxy "$NO_PROXY"
 
 # Instalar dependências com cache otimizado
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci --ignore-scripts
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 # ============================
-# 2) Process Dependencies Stage
+# 2) Build Stage
 # ============================
-FROM dependencies AS deps-processed
-COPY ./Map-Component /app/Map-Component
-RUN node scripts/map-dependency.cjs
-
-# ============================
-# 3) Build Stage
-# ============================
-FROM deps-processed AS build
+FROM dependencies AS build
 COPY . .
 ARG APP_VERSION
 ENV APP_VERSION=${APP_VERSION}
@@ -49,7 +40,7 @@ RUN echo "$APP_VERSION" > dist/version.txt
 RUN sh scripts/generate-config.sh
 
 # ============================
-# 4) Runtime Stage
+# 3) Runtime Stage
 # ============================
 FROM nginx:alpine
 
