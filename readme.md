@@ -95,7 +95,7 @@ The view page can be accessed in the **`Authentication`** submodule interface.
 
 - **Username:** `admin-cardpg@gmail.com`
 
-- **Password:** `NewStrongPassword123!`
+- **Password:** `NovaSenhaForte123!`
 
 After logging in, the settings table will be displayed.
 
